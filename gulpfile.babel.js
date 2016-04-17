@@ -155,12 +155,12 @@ gulp.task('styles:watch', ['mode:debug', 'mode:watch'], () =>
   gulp.watch(styles_src, ['styles:build'])
 );
 
-gulp.task('watch', ['mode:debug', 'mode:watch', 'compile', 'styles:watch', 'scripts:watch']);
+gulp.task('serve', serve('dist'));
+
+gulp.task('watch', ['mode:debug', 'mode:watch', 'compile', 'styles:watch', 'scripts:watch', 'serve']);
 
 gulp.task('compile', ['clean', 'precompile', 'images:build', 'scripts:build', 'styles:build']);
 
 gulp.task('debug', ['mode:debug', 'compile']);
-
-gulp.task('serve', serve('dist'));
 
 gulp.task('default', ['compile']);
