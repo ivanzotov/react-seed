@@ -7,14 +7,14 @@ import { Link } from 'react-router';
 class Items extends React.Component {
   constructor(props, context) {
     super(props, context);
+    this.refItems = new Firebase('https://react-seed.firebaseio.com/items/');
     this.state = {
       items: []
     };
   }
 
   componentWillMount() {
-    let ref = new Firebase('https://react-seed.firebaseio.com/items/');
-    this.bindAsArray(ref, 'items');
+    this.bindAsArray(this.refItems, 'items');
   }
 
   addItem() {
@@ -22,8 +22,7 @@ class Items extends React.Component {
   }
 
   removeItem(key) {
-    let ref = new Firebase('https://react-seed.firebaseio.com/items/');
-    ref.child(key).remove();
+    refItems.child(key).remove();
   }
 
   render() {
