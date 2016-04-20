@@ -169,8 +169,7 @@ gulp.task('styles:watch', ['mode:debug', 'mode:watch'], () => {
 });
 
 gulp.task('publish', ['compile'], () => {
-  let awspublish = require('gulp-awspublish'),
-           merge = require('merge-stream');
+  let awspublish = require('gulp-awspublish');
 
   let aws = {
     params: { Bucket: bucket },
@@ -185,10 +184,8 @@ gulp.task('publish', ['compile'], () => {
     'Cache-Control': 'max-age=315360000, no-transform, public'
   };
 
-  let gzip = gulp.src('./dist/**/*.+(js|css|html)').pipe(awspublish.gzip());
-  let plain = gulp.src(['./dist/**/*', '!./dist/**/*.+(js|css|html)']);
-
-  return merge(gzip, plain)
+  return gulp.src('./dist/**/*')
+    .pipe(awspublish.gzip())
     .pipe(publisher.cache())
     .pipe(publisher.publish(headers, {force: true}))
     .pipe(awspublish.reporter());
