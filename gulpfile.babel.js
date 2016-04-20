@@ -81,7 +81,7 @@ gulp.task('compile', ['clean:html', 'build'], () => {
 
   stream.end(`<!DOCTYPE html>${ReactDOM.renderToStaticMarkup(React.createElement(App))}`);
   return stream.pipe(streamify(gulpif(!debug, htmlmin({collapseWhitespace: true}))))
-               .pipe(streamify(revReplace({manifest: manifest()})))
+               .pipe(streamify(gulpif(!debug, revReplace({manifest: manifest()}))))
                .pipe(gulp.dest(html_dest));
 });
 
@@ -96,10 +96,10 @@ gulp.task('images:build', ['clean:images'], () => {
   log(`Images moved to ${images_dest} folder`);
 
   return gulp.src(images_src)
-             .pipe(rev())
+             .pipe(gulpif(!debug, rev()))
              .pipe(gulp.dest(images_dest))
-             .pipe(rev.manifest({base: './dist', merge: true}))
-             .pipe(gulp.dest(html_dest));
+             .pipe(gulpif(!debug, rev.manifest({base: './dist', merge: true})))
+             .pipe(gulpif(!debug, gulp.dest(html_dest)));
 });
 
 gulp.task('scripts:build', ['clean:scripts'], () => {
@@ -118,13 +118,13 @@ gulp.task('scripts:build', ['clean:scripts'], () => {
     .pipe(source(scripts_filename))
     .pipe(buffer())
     .pipe(gulpif(debug, sourcemaps.init({loadMaps: true})))
-    .pipe(revReplace({manifest: manifest()}))
+    .pipe(gulpif(!debug, revReplace({manifest: manifest()})))
     .pipe(uglify())
-    .pipe(rev())
+    .pipe(gulpif(!debug, rev()))
     .pipe(gulpif(debug, sourcemaps.write()))
     .pipe(gulp.dest(scripts_dest))
-    .pipe(rev.manifest({base: './dist', merge: true}))
-    .pipe(gulp.dest(html_dest));
+    .pipe(gulpif(!debug, rev.manifest({base: './dist', merge: true})))
+    .pipe(gulpif(!debug, gulp.dest(html_dest)));
   }
 
   if (watch) {
@@ -159,14 +159,14 @@ gulp.task('styles:build', ['clean:styles'], () => {
     .pipe(postcss(processors, {syntax: syntax}))
     .pipe(concat(styles_filename))
     .pipe(sass({indentedSyntax: false, errLogToConsole: true}))
-    .pipe(revReplace({manifest: manifest()}))
+    .pipe(gulpif(!debug, revReplace({manifest: manifest()})))
     .pipe(minify())
     .pipe(rename(styles_filename))
     .pipe(gulpif(debug, sourcemaps.write()))
-    .pipe(rev())
+    .pipe(gulpif(!debug, rev()))
     .pipe(gulp.dest(styles_dest))
-    .pipe(rev.manifest({base: './dist', merge: true}))
-    .pipe(gulp.dest(html_dest));
+    .pipe(gulpif(!debug, rev.manifest({base: './dist', merge: true})))
+    .pipe(gulpif(!debug, gulp.dest(html_dest)));
 });
 
 gulp.task('styles:watch', ['mode:debug', 'mode:watch'], () => {

@@ -17,7 +17,7 @@ export default class Home extends React.Component {
         <span onClick={this.togglePopup.bind(this)}>Open</span>
         {this.state.open && <div className='popup'></div>}
         <img src='/images/react.svg' alt='React' />
-        <Link to='/hello/world'>Change route</Link>
+        <Link to='/items'>Items</Link>
       </div>
     )
   }
