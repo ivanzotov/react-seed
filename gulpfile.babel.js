@@ -10,11 +10,16 @@ import rename from 'gulp-rename';
 import buffer from 'vinyl-buffer';
 import sourcemaps from 'gulp-sourcemaps';
 import rev from 'gulp-rev';
+import revReplace from 'gulp-rev-replace';
 import runSequence from 'run-sequence';
 
 let debug, watch = false;
 gulp.task('mode:debug', () => debug = true);
 gulp.task('mode:watch', () => watch = true);
+
+let manifest = () => {
+  return gulp.src('./rev-manifest.json');
+};
 
 let bucket = 'react-seed';
 let bucket_region = 'us-east-1';
@@ -69,16 +74,14 @@ gulp.task('compile', ['clean:html', 'build'], () => {
   let App = require('./index'),
       React = require('react'),
       ReactDOM = require('react-dom/server'),
-      htmlmin = require('gulp-htmlmin'),
-      revReplace = require('gulp-rev-replace'),
-      manifest = gulp.src('./rev-manifest.json');
+      htmlmin = require('gulp-htmlmin');
 
   let stream = source(html_filename);
   log(`Destination HTML file written ${html_dest}${html_filename}`);
 
   stream.end(`<!DOCTYPE html>${ReactDOM.renderToStaticMarkup(React.createElement(App))}`);
   return stream.pipe(streamify(gulpif(!debug, htmlmin({collapseWhitespace: true}))))
-               .pipe(streamify(revReplace({manifest: manifest})))
+               .pipe(streamify(revReplace({manifest: manifest()})))
                .pipe(gulp.dest(html_dest));
 });
 
@@ -115,6 +118,7 @@ gulp.task('scripts:build', ['clean:scripts'], () => {
     .pipe(source(scripts_filename))
     .pipe(buffer())
     .pipe(gulpif(debug, sourcemaps.init({loadMaps: true})))
+    .pipe(revReplace({manifest: manifest()}))
     .pipe(uglify())
     .pipe(rev())
     .pipe(gulpif(debug, sourcemaps.write()))
@@ -150,11 +154,12 @@ gulp.task('styles:build', ['clean:styles'], () => {
 
   log(`CSS files processed and concatenated to ${styles_dest}${styles_filename}`);
 
-  return gulp.src([styles_src])
+  return gulp.src(styles_src)
     .pipe(gulpif(debug, sourcemaps.init()))
     .pipe(postcss(processors, {syntax: syntax}))
     .pipe(concat(styles_filename))
     .pipe(sass({indentedSyntax: false, errLogToConsole: true}))
+    .pipe(revReplace({manifest: manifest()}))
     .pipe(minify())
     .pipe(rename(styles_filename))
     .pipe(gulpif(debug, sourcemaps.write()))
