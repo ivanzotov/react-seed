@@ -10,10 +10,15 @@ import rename from 'gulp-rename';
 import buffer from 'vinyl-buffer';
 import browserify from 'browserify';
 import sourcemaps from 'gulp-sourcemaps';
+import merge from 'merge-stream';
+import awspublish from 'gulp-awspublish';
 
 let debug, watch = false;
 gulp.task('mode:debug', () => debug = true);
 gulp.task('mode:watch', () => watch = true);
+
+let bucket = 'react-seed';
+let bucket_region = 'us-east-1';
 
 let log = (msg) => gutil.log(gutil.colors.green(msg));
 
@@ -154,6 +159,29 @@ gulp.task('styles:build', ['clean:styles'], cb => {
 gulp.task('styles:watch', ['mode:debug', 'mode:watch'], () =>
   gulp.watch(styles_src, ['styles:build'])
 );
+
+gulp.task('publish', () => {
+  let aws = {
+    params: { Bucket: bucket },
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    region: bucket_region,
+  };
+
+  let publisher = awspublish.create(aws);
+
+  let headers = {
+    'Cache-Control': 'max-age=315360000, no-transform, public'
+  };
+
+  let gzip = gulp.src('./dist/**/*.+(js|css)').pipe(awspublish.gzip());
+  let plain = gulp.src(['./dist/**/*', '!./dist/**/*.+(js|css)']);
+
+  return merge(gzip, plain)
+    .pipe(publisher.cache())
+    .pipe(publisher.publish(headers, {force: true}))
+    .pipe(awspublish.reporter());
+});
 
 gulp.task('serve', serve('dist'));
 
