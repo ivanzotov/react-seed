@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router';
 
 export default class Home extends React.Component {
   constructor(props) {
@@ -15,6 +16,7 @@ export default class Home extends React.Component {
       <div>
         <span onClick={this.togglePopup.bind(this)}>Open</span>
         {this.state.open && <div className='popup'></div>}
+        <Link to='/hello/world'>Change route</Link>
       </div>
     )
   }
