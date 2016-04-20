@@ -10,6 +10,7 @@ export default class App extends React.Component {
         </head>
         <body>
           <div id='yield'></div>
+          <img src='/images/react.svg' alt='React' />
           <script src='/scripts/base.js'></script>
         </body>
       </html>

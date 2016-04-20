@@ -10,6 +10,7 @@ import rename from 'gulp-rename';
 import buffer from 'vinyl-buffer';
 import sourcemaps from 'gulp-sourcemaps';
 import rev from 'gulp-rev';
+import runSequence from 'run-sequence';
 
 let debug, watch = false;
 gulp.task('mode:debug', () => debug = true);
@@ -60,7 +61,11 @@ gulp.task('clean:fonts', () => {
 
 gulp.task('clean', ['clean:html', 'clean:scripts', 'clean:styles', 'clean:images']);
 
-gulp.task('precompile', ['clean:html', 'images:build', 'scripts:build', 'styles:build'], () => {
+gulp.task('build', (cb) => {
+  runSequence('images:build', 'scripts:build', 'styles:build', cb);
+});
+
+gulp.task('compile', ['clean:html', 'build'], () => {
   let App = require('./index'),
       React = require('react'),
       ReactDOM = require('react-dom/server'),
@@ -87,8 +92,11 @@ gulp.task('fonts:build', ['clean:fonts'], () => {
 gulp.task('images:build', ['clean:images'], () => {
   log(`Images moved to ${images_dest} folder`);
 
-  return gulp.src([images_src])
-             .pipe(gulp.dest(images_dest));
+  return gulp.src(images_src)
+             .pipe(rev())
+             .pipe(gulp.dest(images_dest))
+             .pipe(rev.manifest({base: './dist', merge: true}))
+             .pipe(gulp.dest(html_dest));
 });
 
 gulp.task('scripts:build', ['clean:scripts'], () => {
@@ -188,9 +196,9 @@ gulp.task('publish', ['compile'], () => {
 
 gulp.task('serve', serve('dist'));
 
-gulp.task('watch', ['mode:debug', 'mode:watch', 'compile', 'styles:watch', 'scripts:watch', 'serve']);
-
-gulp.task('compile', ['clean', 'precompile']);
+gulp.task('watch', (cb) => {
+  runSequence('mode:debug', 'mode:watch', 'compile', 'styles:watch', 'scripts:watch', 'serve', cb);
+});
 
 gulp.task('debug', ['mode:debug', 'compile']);
 
