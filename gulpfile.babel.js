@@ -174,8 +174,8 @@ gulp.task('publish', ['compile'], () => {
     'Cache-Control': 'max-age=315360000, no-transform, public'
   };
 
-  let gzip = gulp.src('./dist/**/*.+(js|css)').pipe(awspublish.gzip());
-  let plain = gulp.src(['./dist/**/*', '!./dist/**/*.+(js|css)']);
+  let gzip = gulp.src('./dist/**/*.+(js|css|html)').pipe(awspublish.gzip());
+  let plain = gulp.src(['./dist/**/*', '!./dist/**/*.+(js|css|html)']);
 
   return merge(gzip, plain)
     .pipe(publisher.cache())
