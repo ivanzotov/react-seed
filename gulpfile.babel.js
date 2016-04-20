@@ -8,12 +8,8 @@ import gutil from 'gulp-util';
 import source from 'vinyl-source-stream';
 import rename from 'gulp-rename';
 import buffer from 'vinyl-buffer';
-import browserify from 'browserify';
 import sourcemaps from 'gulp-sourcemaps';
-import merge from 'merge-stream';
-import awspublish from 'gulp-awspublish';
 import rev from 'gulp-rev';
-import revReplace from 'gulp-rev-replace';
 
 let debug, watch = false;
 gulp.task('mode:debug', () => debug = true);
@@ -69,6 +65,7 @@ gulp.task('precompile', ['clean:html', 'images:build', 'scripts:build', 'styles:
       React = require('react'),
       ReactDOM = require('react-dom/server'),
       htmlmin = require('gulp-htmlmin'),
+      revReplace = require('gulp-rev-replace'),
       manifest = gulp.src('./rev-manifest.json');
 
   let stream = source(html_filename);
@@ -96,7 +93,8 @@ gulp.task('images:build', ['clean:images'], () => {
 
 gulp.task('scripts:build', ['clean:scripts'], () => {
   let watchify = require('watchify'),
-      uglify = require('gulp-uglify');
+      uglify = require('gulp-uglify'),
+      browserify = require('browserify');
 
   let browserifyOpts = {debug: debug, entries: 'routes.js', extensions: ['.js']};
   let opts = Object.assign({}, watchify.args, browserifyOpts);
@@ -135,7 +133,8 @@ gulp.task('styles:build', ['clean:styles'], () => {
       syntax = require('postcss-scss'),
       autoprefixer = require('autoprefixer'),
       sass = require('gulp-sass'),
-      concat = require('gulp-concat');
+      concat = require('gulp-concat'),
+      minify = require('gulp-minify-css');
 
   let processors = [
     autoprefixer({ browsers: ['last 2 versions'] })
@@ -148,6 +147,7 @@ gulp.task('styles:build', ['clean:styles'], () => {
     .pipe(postcss(processors, {syntax: syntax}))
     .pipe(concat(styles_filename))
     .pipe(sass({indentedSyntax: false, errLogToConsole: true}))
+    .pipe(minify())
     .pipe(rename(styles_filename))
     .pipe(gulpif(debug, sourcemaps.write()))
     .pipe(rev())
@@ -161,6 +161,9 @@ gulp.task('styles:watch', ['mode:debug', 'mode:watch'], () => {
 });
 
 gulp.task('publish', ['compile'], () => {
+  let awspublish = require('gulp-awspublish'),
+           merge = require('merge-stream');
+
   let aws = {
     params: { Bucket: bucket },
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
