@@ -1,4 +1,3 @@
-import $ from 'jquery';
 import React from 'react';
 import { Router, Route, IndexRoute, Redirect, Link } from 'react-router';
 import ReactDOM from 'react-dom';

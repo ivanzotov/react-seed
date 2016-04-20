@@ -187,7 +187,7 @@ gulp.task('publish', ['compile'], () => {
   return gulp.src('./dist/**/*')
     .pipe(awspublish.gzip())
     .pipe(publisher.cache())
-    .pipe(publisher.publish(headers, {force: true}))
+    .pipe(publisher.publish(headers))
     .pipe(awspublish.reporter());
 });
 
